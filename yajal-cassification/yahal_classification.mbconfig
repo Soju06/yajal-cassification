@@ -1,0 +1,10 @@
+﻿{
+  "TrainingTime": 0,
+  "Scenario": "ImageClassification",
+  "Environment": {
+    "Type": "LocalGPU",
+    "Version": 1
+  },
+  "Type": "TrainingConfig",
+  "Version": 1
+}
