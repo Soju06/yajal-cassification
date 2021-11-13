@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
@@ -7,5 +6,22 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML" Version="1.6.0" />
+    <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="1.6.0" />
+    <PackageReference Include="Microsoft.ML.Vision" Version="1.6.0" />
+    <PackageReference Include="SciSharp.TensorFlow.Redist" Version="2.3.1" />
+  </ItemGroup>
+  <ItemGroup Label="yahal_classification">
+    <None Include="yahal_classification.consumption.cs">
+      <DependentUpon>yahal_classification.mbconfig</DependentUpon>
+    </None>
+    <None Include="yahal_classification.training.cs">
+      <DependentUpon>yahal_classification.mbconfig</DependentUpon>
+    </None>
+    <None Include="yahal_classification.zip">
+      <DependentUpon>yahal_classification.mbconfig</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

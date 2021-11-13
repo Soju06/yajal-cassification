@@ -5,7 +5,9 @@ VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yajal-cassification", "yajal-cassification\yajal-cassification.csproj", "{8BBCBDBE-DF5A-40B4-AFC0-F73E793F31DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yajal-data-collection", "yajal-data-collection\yajal-data-collection.csproj", "{526F7BFC-45B7-4D08-836A-9B4DE9FBF733}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yajal-data-collection", "yajal-data-collection\yajal-data-collection.csproj", "{526F7BFC-45B7-4D08-836A-9B4DE9FBF733}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yajal-data-post-processing", "yajal-data-post-processing\yajal-data-post-processing.csproj", "{21053EF7-72E1-4800-B3DB-8362410AD55B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{526F7BFC-45B7-4D08-836A-9B4DE9FBF733}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{526F7BFC-45B7-4D08-836A-9B4DE9FBF733}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{526F7BFC-45B7-4D08-836A-9B4DE9FBF733}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21053EF7-72E1-4800-B3DB-8362410AD55B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21053EF7-72E1-4800-B3DB-8362410AD55B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21053EF7-72E1-4800-B3DB-8362410AD55B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21053EF7-72E1-4800-B3DB-8362410AD55B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

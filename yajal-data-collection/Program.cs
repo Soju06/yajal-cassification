@@ -1,5 +1,6 @@
 ﻿using BooruSharp.Booru;
 using BooruSharp.Booru.Template;
+using BooruSharp.Search.Post;
 using yajal_data_collection;
 
 Console.WriteLine("\n야짤 데이터 수집기 v.01");
@@ -33,8 +34,9 @@ var safeCount =         ReadInt("SAFE 타입 이미지 개수를 지정합니다
 var questionableCount = ReadInt("QUESTIONABLE 타입 이미지 개수를 지정합니다.",   "개수 입력", safeCount,         e => e > 0);
 var explicitCount =     ReadInt("EXPLICIT 타입 이미지 개수를 지정합니다.",       "개수 입력", questionableCount, e => e > 0);
 
-var downloader = (ImageDownloader)SelectCreateObject("Downloader를 선택합니다.", "Booru", 0, new (Type, string)[] {
+var downloader = (ImageDownloader)SelectCreateObject("Downloader를 선택합니다.", "Downloader", 0, new (Type, string)[] {
     new (typeof(ThumbnailImageDownloader), "소형 이미지 다운로더"),
+    new (typeof(LargeImageDownloader), "원본 이미지 다운로더"),
 });
 
 DOWNLOAD:
@@ -43,17 +45,24 @@ Console.WriteLine("다운로드를 시작합니다.");
 Console.WriteLine($"총 개수: {safeCount + questionableCount + explicitCount}");
 Console.WriteLine();
 
-foreach (var result in await booruDownloader.DownloadPostsAsync(path, downloader, safeCount, questionableCount, explicitCount, 100)) {
-    Console.WriteLine($"다운로드 완료됨 {result.Rating}");
-    Console.WriteLine($"포스트 개수: {result.Count - result.FailedPosts.Length}/{result.Count}");
+try {
+    foreach (var result in await booruDownloader.DownloadPostsAsync(path, downloader, safeCount, questionableCount, explicitCount)) {
+        Console.WriteLine($"다운로드 완료됨 {result.Rating}");
+        Console.WriteLine($"포스트 개수: {result.Count - result.FailedPosts.Length}/" +
+            + (result.Rating switch { Rating.Safe => safeCount, Rating.Questionable => questionableCount, Rating.Explicit => explicitCount, _ => 0 }));
+    }
+} catch (HttpRequestException ex) {
+    Console.WriteLine($"다운로드를 실패했습니다. 사이트에 접속이 원활하지 않거나, API가 변경되었을 수도 있습니다.\n {ex.Message}\n");
+} catch (Exception ex) {
+    Console.WriteLine($"다운로드를 실패했습니다. {ex}\n");
 }
 
 Console.Write("다운로드를 다시 하시겠습니까? (y/N)");
-var _k = Console.ReadKey();
-if (_k.Key == ConsoleKey.Y) goto DOWNLOAD;
+
+var _k = Console.ReadLine();
+if (_k?.Trim().ToLower() == "y") goto DOWNLOAD;
 
 goto EXIT;
-
 
 EXIT:
 Console.WriteLine();
@@ -84,6 +93,9 @@ int SelectItem(string title, string message, int? defaultValue = null, params st
 
     title = $"{title}\n{_title}";
 
+    if (defaultValue.HasValue)
+        defaultValue = defaultValue.Value + 1;
+
     SHOW:
     var index = ReadInt(title, message, defaultValue) - 1;
 
@@ -98,9 +110,10 @@ int ReadInt(string title, string message, int? defaultValue = null, Func<int, bo
         Console.WriteLine(title);
     Console.Write($"{message} {(defaultValue.HasValue ? $"(default: {defaultValue})" : "")}: ");
     var m = Console.ReadLine();
+
     if (int.TryParse(m, out var s) && filter?.Invoke(s) != false)
         return s;
-    else if (defaultValue.HasValue)
+    else if (string.IsNullOrWhiteSpace(m) && defaultValue.HasValue)
         return defaultValue.Value;
     else goto SHOW;
 }

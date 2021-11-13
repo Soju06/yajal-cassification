@@ -18,7 +18,7 @@ namespace yajal_data_collection {
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public async Task<DownloadResult[]> DownloadPostsAsync(string path, ImageDownloader downloader,
-            int safeCount, int questionableCount, int explicitCount, int maxRefillCount, params string[] tags) {
+            int safeCount, int questionableCount, int explicitCount, int multiDownloadCount = 10, params string[] tags) {
 
             if (path == null) throw new ArgumentNullException(nameof(path));
             if (downloader == null) throw new ArgumentNullException(nameof(downloader));
@@ -34,11 +34,9 @@ namespace yajal_data_collection {
             };
 
             await FillPostsAsync(
-                (int)(count * 5d), 
                 a_posts,
                 downloader, 
                 path,
-                maxRefillCount,
                 tags
             );
 
@@ -54,14 +52,17 @@ namespace yajal_data_collection {
                 if (_posts.Length < 1) continue;
 
                 var _count = _posts.Length;
+                var _tag = posts.Key.ToString().ToLower();
+                var p_path = Path.Combine(path, _tag);
 
-                Console.Write($"Download {posts.Key} Images... ");
+                Console.WriteLine($"Download {posts.Key} ({Directory.CreateDirectory(p_path).FullName})");
+                Console.Write($"Download Images... {_posts.Length} ");
 
                 using (var progress = new ProgressBar()) {
-                    results.Add(await downloader.DownloadAsync(path, _posts,
-                                                                     (_, i) => {
-                                                                         progress.Report(i / (double)_count);
-                                                                     }));
+                    results.Add(downloader.Download(p_path, _posts, multiDownloadCount,
+                                                                    (_, i) => {
+                                                                        progress.Report(i / (double)_count);
+                                                                    }));
                 }
                 Console.WriteLine("Done.");
             }
@@ -79,34 +80,21 @@ namespace yajal_data_collection {
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public async Task FillPostsAsync(int bufferCount, IDictionary<Rating, SearchResult?[]> c_posts,
-            ImageDownloader downloader, string path, int maxRefillCount, params string[] tags) {
-            if (bufferCount < 1) throw new ArgumentOutOfRangeException(nameof(bufferCount), "버퍼 개수는 0보다 커야합니다.");
+        public async Task FillPostsAsync(IDictionary<Rating, SearchResult?[]> c_posts,
+            ImageDownloader downloader, string path, params string[] tags) {
             if (c_posts == null) throw new ArgumentNullException(nameof(c_posts));
-            if (c_posts.Count < 1) throw new ArgumentException(nameof(bufferCount), "포스트 버퍼는 1보다 커야합니다.");
             if (downloader == null) throw new ArgumentNullException(nameof(downloader));
 
-            var r_posts = c_posts.ToDictionary(e => e.Key, e => e.Value);
-            var fillCount = 0;
-
-            while (r_posts.Count > 0 && fillCount++ <maxRefillCount) {
-                var posts = await _booru.GetRandomPostsAsync(bufferCount, tags);
-
+            foreach (var r in c_posts) {
+                var _posts = r.Value;
+                var posts = await _booru.GetRandomPostsAsync(_posts.Length, tagsArg: tags.Append($"rating:{r.Key.ToString().ToLower()}").ToArray());
                 for (int i = 0; i < posts.Length; i++) {
                     var post = posts[i];
-                    if (!r_posts.TryGetValue(post.Rating, out var _posts))
-                        return;
-
-                    var index = Array.FindIndex(_posts, post => post == null);
-                    if (index == -1) {
-                        r_posts.Remove(post.Rating);
-                        continue;
-                    }
 
                     if (downloader.IsExists(post, path))
                         return;
 
-                    _posts[index] = post;
+                    _posts[i] = post;
                 }
             }
         }

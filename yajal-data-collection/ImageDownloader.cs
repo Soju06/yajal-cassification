@@ -19,23 +19,35 @@ namespace yajal_data_collection {
         /// <param name="dir">경로</param>
         /// <param name="posts">포스트</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<DownloadResult> DownloadAsync(string dir, IEnumerable<SearchResult> posts, Action<SearchResult, int>? imageDownloadUpdate = null) {
-            if (posts == null) throw new ArgumentNullException(nameof(posts));
-            List<(int, string)> failedPosts = new();
+        public DownloadResult Download(string dir, IEnumerable<SearchResult> posts, int multiDownloadCount = 10,
+            Action<SearchResult, int>? imageDownloadUpdate = null) {
 
+            if (posts == null) throw new ArgumentNullException(nameof(posts));
+            
+            List<(int, string)> failedPosts = new();
             SearchResult e_post = default;
-            int i = 0;
+            int i = 0, f_i = 0;
+            var tasks = new Task[multiDownloadCount];
+
+            for (int l = 0; l < tasks.Length; l++)
+                tasks[l] = Task.CompletedTask;
+
             foreach (var post in posts) {
                 try {
                     if (i++ == 0) e_post = post;
-                    await DownloadAsync(post, dir);
+                    var task = tasks[Task.WaitAny(tasks)] = DownloadAsync(post, dir);
+
+                    task.ContinueWith(t => {
+                        imageDownloadUpdate?.Invoke(post, ++f_i);
+                    });
                 } catch (Exception ex) {
                     failedPosts.Add(new(post.ID, ex.Message));
                 }
-                imageDownloadUpdate?.Invoke(post, i - 1);
             }
 
-            return new((from p in posts select p.ID).ToArray(), failedPosts.ToArray(), i, e_post.Rating);
+            Task.WaitAll(tasks);
+
+            return new((from p in posts select p.ID).ToArray(), failedPosts.ToArray(), f_i, e_post.Rating);
         }
     }
 

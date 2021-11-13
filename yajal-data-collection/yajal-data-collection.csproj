@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="BooruSharp" Version="3.0.3" />
+    <PackageReference Include="FastBitmapLib" Version="2.1.0" />
   </ItemGroup>
 
 </Project>
